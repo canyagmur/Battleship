@@ -3,9 +3,10 @@ import numpy as np
 
 
 class GridMaker:
-    LETTER_RANGE = 'abcdefghijklmnopqrstuvwxyz'.upper()
+    LETTER_RANGE = 'abcdefghijklmnopqrstuvwxyz'.upper()  # ALPHABET
 
     def __init__(self, game_size, space_size=4):
+
         "Game size should be between 10-26"
         limited_value = min(game_size, 26)
         self.game_size = max(limited_value, 10)
@@ -53,7 +54,16 @@ class GridMaker:
         print("\n" * 3)
         print("---------------------DEPLOY YOUR FLEET--------------------")
         head, tail = self.get_locations(Fleet.CARRIER)
-        print(head, tail)
+        self.put_ship(head,tail,Fleet.CARRIER)
+
+
+    def put_ship(self,head,tail,fleet_type):
+        print("{} is deployed !".format(fleet_type.name))
+        x_h,y_h = head
+        x_t,y_t = tail
+        start_x , end_x = tuple(sorted([x_t,x_h]))
+        start_y , end_y = tuple(sorted([y_t,y_h]))
+        self.GRID_YOU[start_x:end_x+1,start_y:end_y+1] = fleet_type.name[0]
 
     def get_locations(self, fleet_type):
         while True:
@@ -67,7 +77,8 @@ class GridMaker:
                 tail = tail.strip()
 
                 if len(head) == 2 and len(tail) == 2 and (head[0] in self.LETTER_RANGE) and (
-                        tail[0] in self.LETTER_RANGE) and (int(head[1]) in range(1, 11)) and (int(tail[1]) in range(1, 11)):
+                        tail[0] in self.LETTER_RANGE) and (int(head[1]) in range(1, 11)) and (
+                        int(tail[1]) in range(1, 11)):
 
                     if head[0] == tail[0] or head[1] == tail[1]:
                         head_index_sum = GridMaker.LETTER_RANGE.index(head[0]) + int(head[1])
@@ -75,8 +86,8 @@ class GridMaker:
                         len_ship = abs(head_index_sum - tail_index_sum) + 1
 
                         if len_ship == fleet_type.value:
-                            head = int(head[1])-1, GridMaker.LETTER_RANGE.index(head[0])
-                            tail = int(tail[1])-1, GridMaker.LETTER_RANGE.index(tail[0])
+                            head = int(head[1]) - 1, GridMaker.LETTER_RANGE.index(head[0])
+                            tail = int(tail[1]) - 1, GridMaker.LETTER_RANGE.index(tail[0])
                             return head, tail
 
                         print("Length of the {} must be {}".format(fleet_type.name, fleet_type.value))
@@ -102,3 +113,4 @@ class GridMaker:
 grid = GridMaker(game_size=10, space_size=4)
 grid.display_grids()
 grid.deploy_fleet()
+
