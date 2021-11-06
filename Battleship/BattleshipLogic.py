@@ -4,18 +4,19 @@ import numpy as np
 
 class GridMaker:
     LETTER_RANGE = 'abcdefghijklmnopqrstuvwxyz'.upper()  # ALPHABET
+    PLACE_HOLDER = "_"
 
     def __init__(self, game_size, space_size=4):
 
-        "Game size should be between 10-26"
+        """Game size should be between 10-26"""
         limited_value = min(game_size, 26)
         self.game_size = max(limited_value, 10)
 
         self.GRID_YOU = np.empty((10, 10), dtype=str)
-        self.GRID_YOU[:] = "_"
+        self.GRID_YOU[:] = self.PLACE_HOLDER
 
         self.GRID_OPPONENT = np.empty((10, 10), dtype=str)
-        self.GRID_OPPONENT[:] = "_"
+        self.GRID_OPPONENT[:] = self.PLACE_HOLDER
         self.space_size = space_size
 
     def display_grids(self):
@@ -53,17 +54,44 @@ class GridMaker:
     def deploy_fleet(self):
         print("\n" * 3)
         print("---------------------DEPLOY YOUR FLEET--------------------")
-        head, tail = self.get_locations(Fleet.CARRIER)
-        self.put_ship(head,tail,Fleet.CARRIER)
+
+        fleet_enums = [i for i in Fleet]
+
+        #head, tail = self.get_locations(Fleet.CARRIER)
+        #self.put_ship(head, tail, Fleet.CARRIER)
+
+        for ship_enum in fleet_enums:
+            head,tail = self.get_locations(ship_enum)
+            while True:
+                if self.is_block_empty(head,tail):
+                    self.put_ship(head,tail,ship_enum)
+                    break
+                else:
+                    print("Overlapping blocks for ships detected!")
+                    print("Please try again.")
+                    continue
+        print("The fleet is ready for your command!")
+        self.display_grids()
 
 
-    def put_ship(self,head,tail,fleet_type):
+
+
+
+    def is_block_empty(self,head,tail):
+        x_h, y_h = head
+        x_t, y_t = tail
+        start_x, end_x = tuple(sorted([x_t, x_h]))
+        start_y, end_y = tuple(sorted([y_t, y_h]))
+        filter_list = self.GRID_YOU[start_x:end_x + 1, start_y:end_y + 1] == self.PLACE_HOLDER
+        return False not in filter_list
+
+    def put_ship(self, head, tail, fleet_type):
         print("{} is deployed !".format(fleet_type.name))
-        x_h,y_h = head
-        x_t,y_t = tail
-        start_x , end_x = tuple(sorted([x_t,x_h]))
-        start_y , end_y = tuple(sorted([y_t,y_h]))
-        self.GRID_YOU[start_x:end_x+1,start_y:end_y+1] = fleet_type.name[0]
+        x_h, y_h = head
+        x_t, y_t = tail
+        start_x, end_x = tuple(sorted([x_t, x_h]))
+        start_y, end_y = tuple(sorted([y_t, y_h]))
+        self.GRID_YOU[start_x:end_x + 1, start_y:end_y + 1] = fleet_type.name[0]
 
     def get_locations(self, fleet_type):
         while True:
