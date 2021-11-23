@@ -4,10 +4,8 @@ from prompt_toolkit import print_formatted_text, HTML,ANSI
 from prompt_toolkit.styles import Style
 from prompt_toolkit.formatted_text import FormattedText
 from prompt_toolkit.shortcuts import prompt
-
-
-
-
+from prompt_toolkit.completion import WordCompleter
+import os
 
 
 class GridMaker:
@@ -27,10 +25,10 @@ class GridMaker:
         self.GRID_OPPONENT[:] = self.PLACE_HOLDER
         self.space_size = space_size
 
-        self.possible_locations = []
+        self.all_locations = []
         for letter in self.LETTER_RANGE[0:self.game_size]:
             for number in range(1,self.game_size+1):
-                self.possible_locations.append(letter+str(number))
+                self.all_locations.append(letter+str(number))
 
     def display_grids(self):
         grid_size = self.game_size + 1
@@ -78,24 +76,27 @@ class GridMaker:
 
         fleet_enums = [i for i in Fleet]
 
-        # head, tail = self.get_locations(Fleet.CARRIER)
-        # self.put_ship(head, tail, Fleet.CARRIER)
+        possible_locs = self.all_locations.copy()
 
         for ship_enum in fleet_enums:
-            head, tail = self.get_locations(ship_enum)
+            head, tail = self.get_locations(ship_enum,possible_locs)
             while True:
                 if self.is_block_empty(head, tail):
-                    self.put_ship(head, tail, ship_enum)
+                    possible_locs=self.put_ship(head, tail, ship_enum,possible_locs)
                     break
                 else:
                     print_formatted_text(HTML("<ansired>Overlapping blocks for ships detected!</ansired>"))
                     print_formatted_text(HTML('<ansired>Please try again...</ansired>'))
-                    head, tail = self.get_locations(ship_enum)
+                    head, tail = self.get_locations(ship_enum,possible_locs)
                     continue
         print_formatted_text("\n"*3)
         print_formatted_text(HTML('<ansicyan>The fleet is ready for your command!</ansicyan>'))
 
         self.display_grids()
+
+    def is_grid_valid_and_empty(self,loc,available_locs):
+        return loc in available_locs
+
 
     def is_block_empty(self, head, tail):
         x_h, y_h = head
@@ -105,7 +106,7 @@ class GridMaker:
         filter_list = self.GRID_YOU[start_x:end_x + 1, start_y:end_y + 1] == self.PLACE_HOLDER
         return False not in filter_list
 
-    def put_ship(self, head, tail, fleet_type):
+    def put_ship(self, head, tail, fleet_type,possible_locs):
         text = "{} is deployed !".format(fleet_type.name)
         print_formatted_text(HTML("<ansigreen>{}</ansigreen>").format(text))
         x_h, y_h = head
@@ -113,8 +114,14 @@ class GridMaker:
         start_x, end_x = tuple(sorted([x_t, x_h]))
         start_y, end_y = tuple(sorted([y_t, y_h]))
         self.GRID_YOU[start_x:end_x + 1, start_y:end_y + 1] = fleet_type.name[0]
+        for i in range(start_x,end_x+1):
+            for j in range(start_y,end_y+1):
+                loc = self.LETTER_RANGE[j]+str(i+1)
+                possible_locs.remove(loc)
+        return  possible_locs
 
-    def get_locations(self, fleet_type):
+
+    def get_locations(self, fleet_type,available_loc_list):
         while True:
             text = '                    _~      \n\
                 _~ )_)_~   \n\
@@ -146,22 +153,57 @@ class GridMaker:
                     ('class:pound', '# '),
                 ]
 
-                from prompt_toolkit.completion import WordCompleter
 
-                loc_completer = WordCompleter(self.possible_locations)  # autocompleter
+                loc_completer = WordCompleter(available_loc_list)  # autocompleter
 
                 print_formatted_text(HTML('<ansiyellow>\tPLEASE SELECT THE LOCATION OF THE HEAD : </ansiyellow>'))
                 head = prompt(message, style=style,completer=loc_completer)
 
+                other_locs =[]
+                if self.is_grid_valid_and_empty(head,available_loc_list):
+                    letter = head[0]
+                    number = int(head[1:])
+                    ship_size = fleet_type.value
+
+                    letter_1 = chr(ord(letter)-ship_size+1) #search below
+                    letter_2 = chr(ord(letter)+ship_size-1) #search above
+
+                    if ord(letter_1) >= ord("A") and self.is_grid_valid_and_empty((letter_1+str(number)),available_loc_list):
+                        other_locs.append(letter_1+str(number))
+                    if ord(letter_2) <= ord(self.LETTER_RANGE[self.game_size-1]) and self.is_grid_valid_and_empty((letter_2+str(number)),available_loc_list):
+                        other_locs.append(letter_2+str(number))
+
+                    number_1 = number-ship_size+1 #search below
+                    number_2 = number+ship_size-1 #search above
+
+                    if number_1 >= 1 and self.is_grid_valid_and_empty((letter+str(number_1)),available_loc_list)  :
+                        other_locs.append(letter+str(number_1))
+
+                    if number_2 <= self.game_size and self.is_grid_valid_and_empty((letter+str(number_2)),available_loc_list):
+                        other_locs.append(letter+str(number_2))
+
+                    #other_locs = [x for x in available_loc_list.copy() if x.startswith(head[0]) or x.endswith(head[1:])]
+                else:
+                    print_formatted_text(HTML('<ansired>Mismatched location</ansired>'))
+                    print_formatted_text(HTML('<ansired>Please try again...</ansired>'))
+                    continue
+
+                loc_completer = WordCompleter(other_locs)
 
                 print_formatted_text(HTML('<ansiyellow>\tPLEASE SELECT THE LOCATION OF THE TAIL : </ansiyellow>'))
                 tail = prompt(message, style=style,completer=loc_completer)
 
+                if tail in available_loc_list:
+                    head = head.strip()
+                    tail = tail.strip()
+                else:
+                    print_formatted_text(HTML('<ansired>Mismatched location</ansired>'))
+                    print_formatted_text(HTML('<ansired>Please try again...</ansired>'))
+                    continue
                 "whitespaces will be ignored"
-                head = head.strip()
-                tail = tail.strip()
 
-                if (head in self.possible_locations) and (tail in self.possible_locations):
+
+                if (head in available_loc_list) and (tail in available_loc_list):
 
                     if head[0] == tail[0] or head[1:] == tail[1:]:
                         head_index_sum = GridMaker.LETTER_RANGE.index(head[0]) + int(head[1:])
@@ -171,6 +213,7 @@ class GridMaker:
                         if len_ship == fleet_type.value:
                             head = int(head[1:]) - 1, GridMaker.LETTER_RANGE.index(head[0])
                             tail = int(tail[1:]) - 1, GridMaker.LETTER_RANGE.index(tail[0])
+
                             return head, tail
 
                         text ="\nLength of the {} must be {}".format(fleet_type.name, fleet_type.value)
@@ -183,7 +226,7 @@ class GridMaker:
                         print_formatted_text(HTML('<ansired>Please try again...</ansired>'))
                         continue
 
-                else:
+                else: #unnecessary
                     print_formatted_text(HTML('<ansired>Mismatched location</ansired>'))
                     print_formatted_text(HTML('<ansired>Please try again...</ansired>'))
 
@@ -194,6 +237,19 @@ class GridMaker:
                 continue
 
 
-grid = GridMaker(game_size=10, space_size=4)
+
+
+def clearConsole():
+    command = 'clear'
+    if os.name in ('nt', 'dos'):  # If Machine is running on Windows, use cls
+        command = 'cls'
+    os.system(command)
+
+
+
+
+clearConsole()
+
+grid = GridMaker(game_size=20, space_size=4)
 grid.display_grids()
 grid.deploy_fleet()
