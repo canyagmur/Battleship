@@ -6,13 +6,17 @@ from prompt_toolkit.formatted_text import FormattedText
 from prompt_toolkit.shortcuts import prompt
 from prompt_toolkit.completion import WordCompleter
 import os
+from ShipText import ShipText
+
 
 
 class GridMaker:
     LETTER_RANGE = 'abcdefghijklmnopqrstuvwxyz'.upper()  # ALPHABET
     PLACE_HOLDER = "-"
+    GRID_YOU = None
+    GRID_OPPONENT = None
 
-    def __init__(self, game_size, space_size=4):
+    def __init__(self, game_size, username1,username2,space_size=4):
 
         """Game size should be between 10-26"""
         limited_value = min(game_size, 26)
@@ -20,9 +24,13 @@ class GridMaker:
 
         self.GRID_YOU = np.empty((self.game_size, self.game_size), dtype=str)
         self.GRID_YOU[:] = self.PLACE_HOLDER
+        self.username1 = username1
+
 
         self.GRID_OPPONENT = np.empty((self.game_size, self.game_size), dtype=str)
         self.GRID_OPPONENT[:] = self.PLACE_HOLDER
+        self.username2 = username2
+
         self.space_size = space_size
 
         self.all_locations = []
@@ -70,24 +78,35 @@ class GridMaker:
             print_formatted_text("")  # NEW LINE
             if i == 0: print_formatted_text("")
 
-    def deploy_fleet(self):
+    def deploy_fleet(self,user):
+        username=""
+        if user==1:
+            username=self.username1
+            USER = self.GRID_YOU
+        else:
+            username = self.username2
+            USER = self.GRID_OPPONENT
+
+
+
+
         print_formatted_text("\n" * 3)
         print_formatted_text(HTML('<ansiwhite><i>---------------------DEPLOY YOUR FLEET--------------------</i></ansiwhite>'))
-
+        print_formatted_text("\n" * 2)
         fleet_enums = [i for i in Fleet]
 
         possible_locs = self.all_locations.copy()
 
         for ship_enum in fleet_enums:
-            head, tail = self.get_locations(ship_enum,possible_locs)
+            head, tail = self.get_locations(ship_enum,possible_locs,username)
             while True:
-                if self.is_block_empty(head, tail):
-                    possible_locs=self.put_ship(head, tail, ship_enum,possible_locs)
+                if self.is_block_empty(head, tail,USER):
+                    possible_locs=self.put_ship(head, tail, ship_enum,possible_locs,USER)
                     break
                 else:
                     print_formatted_text(HTML("<ansired>Overlapping blocks for ships detected!</ansired>"))
                     print_formatted_text(HTML('<ansired>Please try again...</ansired>'))
-                    head, tail = self.get_locations(ship_enum,possible_locs)
+                    head, tail = self.get_locations(ship_enum,possible_locs,username)
                     continue
         print_formatted_text("\n"*3)
         print_formatted_text(HTML('<ansicyan>The fleet is ready for your command!</ansicyan>'))
@@ -98,22 +117,24 @@ class GridMaker:
         return loc in available_locs
 
 
-    def is_block_empty(self, head, tail):
+    def is_block_empty(self, head, tail,USER):
         x_h, y_h = head
         x_t, y_t = tail
         start_x, end_x = tuple(sorted([x_t, x_h]))
         start_y, end_y = tuple(sorted([y_t, y_h]))
-        filter_list = self.GRID_YOU[start_x:end_x + 1, start_y:end_y + 1] == self.PLACE_HOLDER
+        filter_list = USER[start_x:end_x + 1, start_y:end_y + 1] == self.PLACE_HOLDER
         return False not in filter_list
 
-    def put_ship(self, head, tail, fleet_type,possible_locs):
-        text = "{} is deployed !".format(fleet_type.name)
-        print_formatted_text(HTML("<ansigreen>{}</ansigreen>").format(text))
+    def put_ship(self, head, tail, fleet_type,possible_locs,USER):
+        print_formatted_text("\n"*2)
+        text = "\t\t\t{} is deployed !".format(fleet_type.name)
+        print_formatted_text(HTML("<ansicyan>{}</ansicyan>").format(text))
+        print_formatted_text("\n"*2)
         x_h, y_h = head
         x_t, y_t = tail
         start_x, end_x = tuple(sorted([x_t, x_h]))
         start_y, end_y = tuple(sorted([y_t, y_h]))
-        self.GRID_YOU[start_x:end_x + 1, start_y:end_y + 1] = fleet_type.name[0]
+        USER[start_x:end_x + 1, start_y:end_y + 1] = fleet_type.name[0]
         for i in range(start_x,end_x+1):
             for j in range(start_y,end_y+1):
                 loc = self.LETTER_RANGE[j]+str(i+1)
@@ -121,14 +142,13 @@ class GridMaker:
         return  possible_locs
 
 
-    def get_locations(self, fleet_type,available_loc_list):
+    def get_locations(self, fleet_type,available_loc_list,username):
         while True:
-            text = '                    _~      \n\
-                _~ )_)_~   \n\
-                )_))_))_)   DEPLOY YOUR {} (LENGTH {})\n\
-                _!__!__!_   \n\
-                \______t/  \n\
-              ~~~~~~~~~~~~~'.format(fleet_type.name, fleet_type.value)
+            if fleet_type.name=="CARRIER" : text = ShipText.CARRIER.value
+            if fleet_type.name == "BATTLESHIP": text = ShipText.BATTLESHIP.value
+            if fleet_type.name == "SUBMARINE": text = ShipText.SUBMARINE.value
+            if fleet_type.name == "DESTROYER": text = ShipText.DESTROYER.value
+
             #text ="DEPLOY YOUR {} (LENGTH {})".format(fleet_type.name, fleet_type.value)
             print_formatted_text(HTML("<ansigreen>{}</ansigreen>").format(text))
             try:
@@ -146,7 +166,7 @@ class GridMaker:
                 })
 
                 message = [
-                    ('class:username', 'can'),
+                    ('class:username', username),
                     ('class:at', '@'),
                     ('class:host', 'localhost'),
                     ('class:colon', ':'),
@@ -239,17 +259,8 @@ class GridMaker:
 
 
 
-def clearConsole():
-    command = 'clear'
-    if os.name in ('nt', 'dos'):  # If Machine is running on Windows, use cls
-        command = 'cls'
-    os.system(command)
 
 
 
 
-clearConsole()
 
-grid = GridMaker(game_size=20, space_size=4)
-grid.display_grids()
-grid.deploy_fleet()
