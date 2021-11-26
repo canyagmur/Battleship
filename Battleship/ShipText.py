@@ -60,10 +60,3 @@ class ShipText(Enum):
                 \______t/  \n\
               ~~~~~~~~~~~~~'
 
-
-print(ShipText.WELCOME.value)
-print(ShipText.CARRIER.value)
-print(ShipText.BATTLESHIP.value)
-print(ShipText.SUBMARINE.value)
-
-print(ShipText.DESTROYER.value)

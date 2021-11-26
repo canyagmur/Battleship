@@ -5,6 +5,11 @@ import pickle
 import numpy
 from prompt_toolkit.shortcuts import prompt
 import traceback
+from prompt_toolkit.styles import Style
+import os
+
+
+# os.system("mode con cols=300 lines=300") make fullscreen
 
 
 MESSAGE_TAKEN = None
@@ -36,7 +41,7 @@ def send(msg,client):
     MESSAGE_TAKEN = pickle.loads(recvd_data)
     client.close()
 
-    print("Message is taken.")
+    #print("Message is taken.")
 
 def send_and_wait(msg,client):
     global MESSAGE_TAKEN,ADDR
@@ -63,15 +68,32 @@ def send_and_wait(msg,client):
     MESSAGE_TAKEN=None
     return content
 
+
 def play():
     global MESSAGE_TAKEN
     Game.clear_console()
     Game.Welcome()
 
+    style = Style.from_dict({
+        # User input (default text).
+        '': 'ansigreen ',
 
-    username_client = prompt("\t\t What is your username ?")
+        # Prompt.
+        'sentence': '#FFFFFF',
+        'key': '#ff0066 underline',
+        'column' : '#FFFFFF'
+
+    })
+
+    message = [
+        ('class:sentence', "Pick a "),
+        ('class:key', 'username'),
+        ('class:column', ' :')
+    ]
+    username_client = prompt(message=message,style=style)
     username_server = ""
 
+    #0
     client = open_client()
     msg= username_client
     username_server=send_and_wait(msg=msg,client=client)
@@ -86,20 +108,30 @@ def play():
         game.clear_console()
         game.DISPLAY_GRIDS(grid_you=game.GRID_YOU, grid_opponent_r=game.GRID_OPPONENT_R)
         print("Waiting for other player's move!")
-
+        #1
         client=open_client()
         msg = game.GRID_YOU
         grid_from_server = send_and_wait(msg=msg,client=client)
 
+        #2
         client = open_client()
         msg ="WAITING"
-        Game.GRID_YOU  = send_and_wait(msg=msg,client=client)
+        msg_recvd= send_and_wait(msg=msg,client=client)
+        if isinstance(msg_recvd,str) and msg_recvd=="LOSE":
+            winner=game.username2.upper()
+            print(winner)
+            break
+        game.GRID_YOU = msg_recvd
 
+        #3
         print("Your turn user2:")
         game.all_locs_opponent_r,grid_from_server = game.make_guess(username=username_client,opponent_grid_real=grid_from_server,opponent_grid_relative=game.GRID_OPPONENT_R,possible_locs_opponent_r=game.all_locs_opponent_r)
         game.DISPLAY_GRIDS(grid_you=game.GRID_YOU,grid_opponent_r=game.GRID_OPPONENT_R)
         if game.is_game_finished(grid_from_server):
-            winner=game.username2.upper()
+            winner=game.username1.upper()
+            client = open_client()
+            msg = "LOSE"
+            send_and_wait(msg=msg,client=client)
             break
         client = open_client()
         msg = game.GRID_YOU
