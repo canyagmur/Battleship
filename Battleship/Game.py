@@ -1,5 +1,5 @@
-from BattleshipLogic import GridMaker
-from ShipText import ShipText
+from Battleship.BattleshipLogic import GridMaker
+from Battleship.ShipText import ShipText
 import os
 import time
 from prompt_toolkit.formatted_text import FormattedText
@@ -31,16 +31,11 @@ class Game():
         """Game size should be between 10-26"""
         limited_value = min(game_size, 26)
         self.game_size = max(limited_value, 10)
-
         self.space_size = space_size
 
         self.GRID_YOU = np.empty((self.game_size, self.game_size), dtype=str)
         self.GRID_YOU[:] = self.PLACE_HOLDER
-        self.GRID_YOU_R = np.empty((self.game_size, self.game_size), dtype=str)
-        self.GRID_YOU_R[:] = self.PLACE_HOLDER
 
-        self.GRID_OPPONENT = np.empty((self.game_size, self.game_size), dtype=str)
-        self.GRID_OPPONENT[:] = self.PLACE_HOLDER
         self.GRID_OPPONENT_R = np.empty((self.game_size, self.game_size), dtype=str)
         self.GRID_OPPONENT_R[:] = self.PLACE_HOLDER
 
@@ -48,61 +43,35 @@ class Game():
         self.grid_maker = GridMaker(game_size=self.game_size, space_size=self.space_size, username1=username1,
                                     username2=username2, PLACE_HOLDER=self.PLACE_HOLDER)
 
-        self.all_locs_you_r = GridMaker.all_locations.copy()
         self.all_locs_opponent_r = GridMaker.all_locations.copy()
 
+    def DISPLAY_GRIDS(self,grid_you, grid_opponent_r):
+        self.grid_maker.display_grids(grid_you=grid_you,grid_opponent_r=grid_opponent_r)
+
+    @classmethod
     def clear_console(self):
         command = 'clear'
         if os.name in ('nt', 'dos'):  # If Machine is running on Windows, use cls
             command = 'cls'
         os.system(command)
 
-    def start_game(self):
+    @classmethod
+    def Welcome(self):
         """CLEAN CONSOLE AND WELCOME SCREEN"""
         self.clear_console()
         print_formatted_text(HTML("<ansiwhite>{}</ansiwhite>").format(ShipText.WELCOME.value))
         time.sleep(3)
         print("\n" * 3)
 
+
+    def start_game(self):
+
         self.grid_maker.display_grids(self.GRID_YOU, self.GRID_OPPONENT_R)
         self.GRID_YOU = self.grid_maker.deploy_fleet(username=self.username1, GRID_YOU=self.GRID_YOU,
                                                      GRID_OPPONENT_R=self.GRID_OPPONENT_R)
-        self.GRID_OPPONENT = self.grid_maker.deploy_fleet(username=self.username2, GRID_YOU=self.GRID_OPPONENT,
-                                                          GRID_OPPONENT_R=self.GRID_YOU_R)
+
         self.clear_console()
-        print("User 1 Perspective : ")
-        self.grid_maker.display_grids(self.GRID_YOU, self.GRID_OPPONENT_R)
-        time.sleep(3)
-        print("User 2 Perspective : ")
-        self.grid_maker.display_grids(self.GRID_OPPONENT, self.GRID_YOU_R)
-        time.sleep(3)
 
-
-        print("\nGame is starting .....")
-        winner = None
-        while True:
-            print("your turn user1 :")
-            self.all_locs_opponent_r = self.make_guess(username=self.username1, opponent_grid_real=self.GRID_OPPONENT,
-                                                       opponent_grid_relative=self.GRID_OPPONENT_R,
-                                                       possible_locs_opponent_r=self.all_locs_opponent_r)
-            self.grid_maker.display_grids(self.GRID_YOU, self.GRID_OPPONENT_R)
-            time.sleep(1)
-            if self.is_game_finished(self.GRID_OPPONENT):
-                winner=self.username1.upper()
-                break
-
-
-            print("your turn user2 :")
-            self.all_locs_you_r = self.make_guess(username=self.username2, opponent_grid_real=self.GRID_YOU,
-                                                  opponent_grid_relative=self.GRID_YOU_R,
-                                                  possible_locs_opponent_r=self.all_locs_you_r)
-            self.grid_maker.display_grids(grid_you=self.GRID_OPPONENT, grid_opponent_r=self.GRID_YOU_R)
-            time.sleep(1)
-            if self.is_game_finished(self.GRID_YOU):
-                winner=self.username2.upper()
-                break
-        print("Winner is :",winner)
-        self.grid_maker.display_grids(grid_you=self.GRID_YOU,grid_opponent_r=self.GRID_OPPONENT) #EXPLICIT SHOW
 
     def is_game_finished(self,grid):
         has_true = False
@@ -152,11 +121,11 @@ class Game():
                         if value in self.GRID_FLEET_NAMES: #hit condition
                             opponent_grid_real[x,y] = self.HIT_SYMBOL
                             opponent_grid_relative[x,y] = self.HIT_SYMBOL
-                            return  loc_copy
+                            return  loc_copy,opponent_grid_real
                         else:
                             opponent_grid_real[x,y] = self.MISS_SYMBOL
                             opponent_grid_relative[x,y] = self.MISS_SYMBOL
-                            return loc_copy
+                            return loc_copy,opponent_grid_real
 
                      else:
                         print_formatted_text(HTML('<ansired>This place already marked</ansired>'))
@@ -177,5 +146,5 @@ class Game():
                 break
 
 
-game = Game(game_size=10)
-game.start_game()
+# game = Game(game_size=10)
+# game.start_game()

@@ -1,4 +1,4 @@
-from Fleet import Fleet
+from Battleship.Fleet import Fleet
 import numpy as np
 from prompt_toolkit import print_formatted_text, HTML, ANSI
 from prompt_toolkit.styles import Style
@@ -6,7 +6,7 @@ from prompt_toolkit.formatted_text import FormattedText
 from prompt_toolkit.shortcuts import prompt
 from prompt_toolkit.completion import WordCompleter
 import os
-from ShipText import ShipText
+from Battleship.ShipText import ShipText
 import traceback
 
 
