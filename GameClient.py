@@ -1,5 +1,8 @@
 import socket
 import sys
+
+from playsound import playsound
+
 from Battleship.Game import Game
 import pickle
 import numpy
@@ -7,9 +10,12 @@ from prompt_toolkit.shortcuts import prompt
 import traceback
 from prompt_toolkit.styles import Style
 import os
+from prompt_toolkit import print_formatted_text, HTML, ANSI
+from  keyboard import press
 
 
-# os.system("mode con cols=300 lines=300") make fullscreen
+os.system("mode con cols=140 lines=30")
+#press("F11")
 
 
 MESSAGE_TAKEN = None
@@ -71,7 +77,6 @@ def send_and_wait(msg,client):
 
 def play():
     global MESSAGE_TAKEN
-    Game.clear_console()
     Game.Welcome()
 
     style = Style.from_dict({
@@ -93,6 +98,9 @@ def play():
     username_client = prompt(message=message,style=style)
     username_server = ""
 
+
+    print_formatted_text(HTML('<ansiyellow>\nWaiting for other player to pick a username!\n</ansiyellow>'))
+
     #0
     client = open_client()
     msg= username_client
@@ -101,13 +109,13 @@ def play():
     game = Game(username1=username_client,username2=username_server)
     game.start_game()
 
-    print("\nGame is starting .....")
+    print_formatted_text(HTML('<ansiyellow>\n\tWaiting for other player to deploy his/her fleet!\n</ansiyellow>'))
     winner=None
 
     while True:
-        game.clear_console()
-        game.DISPLAY_GRIDS(grid_you=game.GRID_YOU, grid_opponent_r=game.GRID_OPPONENT_R)
-        print("Waiting for other player's move!")
+
+        print_formatted_text(HTML('<ansiyellow>\n\tWaiting for other player\'s move!\n</ansiyellow>'))
+
         #1
         client=open_client()
         msg = game.GRID_YOU
@@ -123,8 +131,8 @@ def play():
             break
         game.GRID_YOU = msg_recvd
 
-        #3
-        print("Your turn user2:")
+        text = "\nYour turn "+game.username1.upper()+" !"
+        print_formatted_text(HTML('<ansigreen>{}</ansigreen>').format(text))
         game.all_locs_opponent_r,grid_from_server = game.make_guess(username=username_client,opponent_grid_real=grid_from_server,opponent_grid_relative=game.GRID_OPPONENT_R,possible_locs_opponent_r=game.all_locs_opponent_r)
         game.DISPLAY_GRIDS(grid_you=game.GRID_YOU,grid_opponent_r=game.GRID_OPPONENT_R)
         if game.is_game_finished(grid_from_server):

@@ -9,6 +9,8 @@ from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.styles import Style
 from prompt_toolkit.shortcuts import prompt
 import traceback
+import sys
+from playsound import playsound
 
 
 
@@ -60,7 +62,7 @@ class Game():
         """CLEAN CONSOLE AND WELCOME SCREEN"""
         self.clear_console()
         print_formatted_text(HTML("<ansiwhite>{}</ansiwhite>").format(ShipText.WELCOME.value))
-        time.sleep(3)
+        playsound(r"D:\\Dersler\____2021-2022\CS 447\HW1\Sound\Aoe2-vikings2.mp3") #downgrade to playsound1.2.2!
         print("\n" * 3)
 
 
@@ -70,7 +72,6 @@ class Game():
         self.GRID_YOU = self.grid_maker.deploy_fleet(username=self.username1, GRID_YOU=self.GRID_YOU,
                                                      GRID_OPPONENT_R=self.GRID_OPPONENT_R)
 
-        self.clear_console()
 
 
     def is_game_finished(self,grid):
@@ -110,7 +111,7 @@ class Game():
 
         while True:
             try:
-                print_formatted_text(HTML('<ansiyellow>\tPLEASE MAKE A GUESS </ansiyellow>'))
+                print_formatted_text(HTML('<ansiyellow>\n\tPLEASE MAKE A GUESS\n</ansiyellow>'))
                 guess = prompt(message, style=style, completer=loc_completer)
                 if guess in GridMaker.all_locations :   #It checks whether the guess is wrong formatted or not.
                      if guess in loc_copy:
@@ -119,10 +120,12 @@ class Game():
                         value = opponent_grid_real[x,y]
                         loc_copy.remove(guess)
                         if value in self.GRID_FLEET_NAMES: #hit condition
+                            playsound("D:\Dersler\____2021-2022\CS 447\HW1\Sound\ship-sunk-aoe2.mp3")
                             opponent_grid_real[x,y] = self.HIT_SYMBOL
                             opponent_grid_relative[x,y] = self.HIT_SYMBOL
                             return  loc_copy,opponent_grid_real
                         else:
+                            playsound("D:\Dersler\____2021-2022\CS 447\HW1\Sound\miss.mp3")
                             opponent_grid_real[x,y] = self.MISS_SYMBOL
                             opponent_grid_relative[x,y] = self.MISS_SYMBOL
                             return loc_copy,opponent_grid_real

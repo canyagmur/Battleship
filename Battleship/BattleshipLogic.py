@@ -8,11 +8,17 @@ from prompt_toolkit.completion import WordCompleter
 import os
 from Battleship.ShipText import ShipText
 import traceback
+from playsound import playsound
 
 
 class GridMaker:
     LETTER_RANGE = 'abcdefghijklmnopqrstuvwxyz'.upper()  # ALPHABET
     all_locations = []
+    BUILD_SOUND_PATHS = ['D:\Dersler\____2021-2022\CS 447\HW1\Sound\yaparım1.mp3',
+                         'D:\Dersler\____2021-2022\CS 447\HW1\Sound\yaparım2.mp3',
+                         'D:\Dersler\____2021-2022\CS 447\HW1\Sound\yaparım3.mp3',
+                         'D:\Dersler\____2021-2022\CS 447\HW1\Sound\yaparım4.mp3'
+                         ]
 
     def __init__(self, game_size, username1, username2, space_size, PLACE_HOLDER):
         self.game_size = game_size
@@ -27,6 +33,13 @@ class GridMaker:
 
     def display_grids(self, grid_you, grid_opponent_r):
         grid_size = self.game_size + 1
+
+        text = " " * (self.space_size + self.game_size - 1) + self.username1.upper()
+        print_formatted_text(HTML("<ansicyan>{}</ansicyan>").format(text), end="")
+        print_formatted_text(" " * 2 * self.space_size, end="")
+        text = " " * (self.space_size + 2 * self.game_size - 2) + self.username2.upper()
+        print_formatted_text(HTML("<ansicyan>{}</ansicyan>").format(text), end="\n\n")
+
         for i in range(grid_size):
             for j in range(grid_size):
                 if i == 0 and j == 0:
@@ -38,7 +51,7 @@ class GridMaker:
                 elif i != 0 and j == 0:
                     if i >= 10:
                         print_formatted_text(HTML('<b><ansired>{}</ansired></b>').format(i), end=" " * (
-                                    self.space_size - 1))  # print_formatted_text(i, end=" " * (self.space_size - 1))
+                                self.space_size - 1))  # print_formatted_text(i, end=" " * (self.space_size - 1))
                     else:
                         print_formatted_text(HTML('<b><ansired>{}</ansired></b>').format(i),
                                              end=" " * self.space_size)  # print_formatted_text(i, end=" " * self.space_size)
@@ -46,7 +59,6 @@ class GridMaker:
                     mytext = grid_you[i - 1, j - 1]
                     print_formatted_text(HTML('<b><ansiwhite>{}</ansiwhite></b>').format(mytext), end=" ")
             print_formatted_text(" " * 2 * self.space_size, end="")
-
             for j in range(grid_size):
                 if i == 0 and j == 0:
                     # print(" " * (self.space_size + 1), end="")
@@ -59,7 +71,7 @@ class GridMaker:
                 elif i != 0 and j == 0:
                     if i >= 10:
                         print_formatted_text(HTML('<b><ansired>{}</ansired></b>').format(i), end=" " * (
-                                    self.space_size - 1))  # print_formatted_text(i, end=" " * (self.space_size - 1))
+                                self.space_size - 1))  # print_formatted_text(i, end=" " * (self.space_size - 1))
                     else:
                         print_formatted_text(HTML('<b><ansired>{}</ansired></b>').format(i),
                                              end=" " * self.space_size)  # print_formatted_text(i, end=" " * self.space_size)
@@ -92,7 +104,7 @@ class GridMaker:
                     head, tail = self.get_locations(ship_enum, possible_locs, username)
                     continue
         print_formatted_text("\n" * 3)
-        print_formatted_text(HTML('<ansicyan>The fleet is ready for your command!</ansicyan>'))
+        print_formatted_text(HTML('<ansigreen>\t\tThe fleet is ready for your command!\n\n</ansigreen>'))
 
         self.display_grids(GRID_YOU, GRID_OPPONENT_R)
         return GRID_YOU
@@ -109,6 +121,7 @@ class GridMaker:
         return False not in filter_list
 
     def put_ship(self, head, tail, fleet_type, possible_locs, USER):
+        playsound(self.BUILD_SOUND_PATHS[fleet_type.value-2])
         print_formatted_text("\n" * 2)
         text = "\t\t\t{} is deployed !".format(fleet_type.name)
         print_formatted_text(HTML("<ansicyan>{}</ansicyan>").format(text))
