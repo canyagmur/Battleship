@@ -13,6 +13,8 @@ import os
 from prompt_toolkit import print_formatted_text, HTML, ANSI
 from  keyboard import press
 from Battleship.ShipText import ShipText
+import argparse
+
 
 
 os.system("mode con cols=140 lines=40")
@@ -23,7 +25,7 @@ HEADER = 64
 PORT = 5050
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
-SERVER = socket.gethostbyname(socket.gethostname())
+SERVER = '127.0.0.1'
 ADDR = (SERVER, PORT)
 
 
@@ -157,4 +159,12 @@ def play():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Process PORT number and IP address.')
+    parser.add_argument('-p', '--port', help='specify a port number', required=False,default=5050)
+    parser.add_argument( '--ip', help='specify  an IP address', required=False,default='127.0.0.1')
+    args = vars(parser.parse_args())
+
+    SERVER = args['ip']
+    PORT = args['port']
+
     sys.exit(play())
