@@ -1,5 +1,5 @@
 # Battleship Terminal Game
-## DESCRIPTION 
+## Description 
 In this project, the [Battleship Game](https://en.wikipedia.org/wiki/Battleship_(game)) is implemented as a terminal based game which can be played within the local host of the players'.
 
 ## Features
