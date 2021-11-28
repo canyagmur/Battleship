@@ -25,7 +25,7 @@ HEADER = 64
 PORT = 5050
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
-SERVER = '127.0.0.1'
+SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
 
 
@@ -160,11 +160,14 @@ def play():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process PORT number and IP address.')
-    parser.add_argument('-p', '--port', help='specify a port number', required=False,default=5050)
-    parser.add_argument( '--ip', help='specify  an IP address', required=False,default='127.0.0.1')
+    parser.add_argument('-p', '--port', help='specify a port number', required=False,default=5050,type=int)
+    parser.add_argument( '--ip', help='specify  an IP address', required=False,default=socket.gethostbyname(socket.gethostname()))
     args = vars(parser.parse_args())
 
     SERVER = args['ip']
-    PORT = args['port']
+    PORT = int(args['port'])
+
+    ADDR = (SERVER, PORT)
+
 
     sys.exit(play())

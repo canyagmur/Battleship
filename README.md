@@ -18,3 +18,8 @@ In this project, the [Battleship Game](https://en.wikipedia.org/wiki/Battleship_
 
 Arguments can be specified as follows.
 e.g --> python GameClient.py --ip '127.0.0.1' -p 5050
+
+
+## IMPORTANT
+
+If nothing is prompted, press 'TAB'. Sometimes prompt can be buggy.

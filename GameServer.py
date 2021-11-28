@@ -155,10 +155,11 @@ def play():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Process PORT number')
-    parser.add_argument('-p', '--port', help='specify a port number', required=False,default=5050)
-    args = vars(parser.parse_args())
-
-    PORT = args['port']
+    # parser = argparse.ArgumentParser(description='Process PORT number')
+    # parser.add_argument('-p', '--port', help='specify a port number', required=False,default=5050,type=int)
+    # args = vars(parser.parse_args())
+    #
+    # PORT = args['port']
+    # ADDR = (SERVER,PORT)
 
     sys.exit(play())
