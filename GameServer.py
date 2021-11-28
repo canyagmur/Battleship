@@ -1,3 +1,4 @@
+import argparse
 import socket
 import threading
 from Battleship.Game import Game
@@ -9,11 +10,9 @@ import pickle
 import sys
 import os
 from playsound import playsound
-from keyboard import press
 from Battleship.ShipText import ShipText
 
 os.system("mode con cols=140 lines=40")
-# press("F11")
 
 HEADER = 64
 PORT = 5050
@@ -156,4 +155,10 @@ def play():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Process PORT number')
+    parser.add_argument('-p', '--port', help='specify a port number', required=False,default=5050)
+    args = vars(parser.parse_args())
+
+    PORT = args['port']
+
     sys.exit(play())
