@@ -133,7 +133,7 @@ def play():
             game.clear_console()
             game.DISPLAY_GRIDS(grid_you=game.GRID_YOU, grid_opponent_r=game.GRID_OPPONENT_R)
             print_formatted_text(HTML('<ansigreen>\n\n{}</ansigreen>').format(ShipText.WIN.value))
-            playsound('D:\Dersler\____2021-2022\CS 447\HW1\Sound\\victory.mp3')
+            playsound('.\Sound\\victory.mp3')
             break
 
         # ------------------------2-------------------------------
@@ -153,7 +153,7 @@ def play():
             game.clear_console()
             game.DISPLAY_GRIDS(grid_you=game.GRID_YOU, grid_opponent_r=game.GRID_OPPONENT_R)
             print_formatted_text(HTML('<ansired>\n\n{}</ansired>').format(ShipText.LOSE.value))
-            playsound('D:\Dersler\____2021-2022\CS 447\HW1\Sound\lose.mp3')
+            playsound('.\Sound\lose.mp3')
             break
 
         game.GRID_YOU = MESSAGE_TAKEN

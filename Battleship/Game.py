@@ -21,8 +21,7 @@ class Game():
     PLACE_HOLDER = "-"
     GRID_YOU = None
     GRID_OPPONENT = None
-    HIT_SYMBOL = "*"
-    MISS_SYMBOL ="X"
+
     GRID_FLEET_NAMES = ['C','B','S','D']
 
     def __init__(self, username1="User-1", username2="User-2", game_size=10, space_size=4):
@@ -45,7 +44,11 @@ class Game():
         self.grid_maker = GridMaker(game_size=self.game_size, space_size=self.space_size, username1=username1,
                                     username2=username2, PLACE_HOLDER=self.PLACE_HOLDER)
 
-        self.all_locs_opponent_r = self.grid_maker.all_locations.copy()#GridMaker.all_locations.copy()
+        self.all_locs_opponent_r = self.grid_maker.all_locations.copy()
+
+
+        self.HIT_SYMBOL = self.grid_maker.HIT_SYMBOL
+        self.MISS_SYMBOL = self.grid_maker.MISS_SYMBOL
 
     def DISPLAY_GRIDS(self,grid_you, grid_opponent_r):
         self.grid_maker.display_grids(grid_you=grid_you,grid_opponent_r=grid_opponent_r)
@@ -62,7 +65,7 @@ class Game():
         """CLEAN CONSOLE AND WELCOME SCREEN"""
         self.clear_console()
         print_formatted_text(HTML("<ansiwhite>{}</ansiwhite>").format(ShipText.WELCOME.value))
-        playsound(r"D:\\Dersler\____2021-2022\CS 447\HW1\Sound\Aoe2-vikings2.mp3") #downgrade to playsound1.2.2!
+        playsound(r".\Sound\Aoe2-vikings2.mp3") #downgrade to playsound1.2.2!
         print("\n" * 3)
 
 
@@ -120,12 +123,12 @@ class Game():
                         value = opponent_grid_real[x,y]
                         loc_copy.remove(guess)
                         if value in self.GRID_FLEET_NAMES: #hit condition
-                            playsound("D:\Dersler\____2021-2022\CS 447\HW1\Sound\ship-sunk-aoe2.mp3")
+                            playsound(".\Sound\ship-sunk-aoe2.mp3")
                             opponent_grid_real[x,y] = self.HIT_SYMBOL
                             opponent_grid_relative[x,y] = self.HIT_SYMBOL
                             return  loc_copy,opponent_grid_real
                         else:
-                            playsound("D:\Dersler\____2021-2022\CS 447\HW1\Sound\miss.mp3")
+                            playsound(".\Sound\miss.mp3")
                             opponent_grid_real[x,y] = self.MISS_SYMBOL
                             opponent_grid_relative[x,y] = self.MISS_SYMBOL
                             return loc_copy,opponent_grid_real
@@ -144,8 +147,8 @@ class Game():
                     print_formatted_text(HTML('<ansired>Input format is wrong!</ansired>'))
                     print_formatted_text(HTML('<ansired>Please try again...</ansired>'))
                     continue
-                print_formatted_text(e)
-                print_formatted_text(traceback.format_exc())  # print stack trace
+                #print_formatted_text(e)
+                #print_formatted_text(traceback.format_exc())  # print stack trace
                 break
 
 

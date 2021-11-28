@@ -14,11 +14,14 @@ from playsound import playsound
 class GridMaker:
     LETTER_RANGE = 'abcdefghijklmnopqrstuvwxyz'.upper()  # ALPHABET
     all_locations = []
-    BUILD_SOUND_PATHS = ['D:\Dersler\____2021-2022\CS 447\HW1\Sound\yaparım1.mp3',
-                         'D:\Dersler\____2021-2022\CS 447\HW1\Sound\yaparım2.mp3',
-                         'D:\Dersler\____2021-2022\CS 447\HW1\Sound\yaparım3.mp3',
-                         'D:\Dersler\____2021-2022\CS 447\HW1\Sound\yaparım4.mp3'
+    BUILD_SOUND_PATHS = ['.\Sound\yaparım1.mp3',
+                         '.\Sound\yaparım2.mp3',
+                         '.\Sound\yaparım3.mp3',
+                         '.\Sound\yaparım4.mp3'
                          ]
+
+    HIT_SYMBOL = "H"
+    MISS_SYMBOL ="X"
 
     def __init__(self, game_size, username1, username2, space_size, PLACE_HOLDER):
         self.game_size = game_size
@@ -46,18 +49,21 @@ class GridMaker:
                     print_formatted_text(" " * (self.space_size + 1), end="")
                 elif i == 0 and j != 0:
                     mytext = self.LETTER_RANGE[j - 1]
-                    print_formatted_text(HTML('<b><ansired>{}</ansired></b>').format(mytext),
+                    print_formatted_text(HTML('<b><ansiyellow>{}</ansiyellow></b>').format(mytext),
                                          end=" ")  # print(self.LETTER_RANGE[j - 1], end=" ")
                 elif i != 0 and j == 0:
                     if i >= 10:
-                        print_formatted_text(HTML('<b><ansired>{}</ansired></b>').format(i), end=" " * (
+                        print_formatted_text(HTML('<b><ansiyellow>{}</ansiyellow></b>').format(i), end=" " * (
                                 self.space_size - 1))  # print_formatted_text(i, end=" " * (self.space_size - 1))
                     else:
-                        print_formatted_text(HTML('<b><ansired>{}</ansired></b>').format(i),
+                        print_formatted_text(HTML('<b><ansiyellow>{}</ansiyellow></b>').format(i),
                                              end=" " * self.space_size)  # print_formatted_text(i, end=" " * self.space_size)
                 else:
                     mytext = grid_you[i - 1, j - 1]
-                    print_formatted_text(HTML('<b><ansiwhite>{}</ansiwhite></b>').format(mytext), end=" ")
+                    if mytext == self.HIT_SYMBOL : print_formatted_text(HTML('<b><ansired>{}</ansired></b>').format(mytext), end=" ")
+                    elif mytext == self.MISS_SYMBOL : print_formatted_text(HTML('<b><ansigreen>{}</ansigreen></b>').format(mytext), end=" ")
+                    else: print_formatted_text(HTML('<b><ansiwhite>{}</ansiwhite></b>').format(mytext), end=" ")
+
             print_formatted_text(" " * 2 * self.space_size, end="")
             for j in range(grid_size):
                 if i == 0 and j == 0:
@@ -66,18 +72,21 @@ class GridMaker:
                     print_formatted_text(mytext, end="")
                 elif i == 0 and j != 0:
                     mytext = self.LETTER_RANGE[j - 1]
-                    print_formatted_text(HTML('<b><ansired>{}</ansired></b>').format(mytext), end=" ")
+                    print_formatted_text(HTML('<b><ansiyellow>{}</ansiyellow></b>').format(mytext), end=" ")
                     # print(self.LETTER_RANGE[j - 1], end=" ")
                 elif i != 0 and j == 0:
                     if i >= 10:
-                        print_formatted_text(HTML('<b><ansired>{}</ansired></b>').format(i), end=" " * (
+                        print_formatted_text(HTML('<b><ansiyellow>{}</ansiyellow></b>').format(i), end=" " * (
                                 self.space_size - 1))  # print_formatted_text(i, end=" " * (self.space_size - 1))
                     else:
-                        print_formatted_text(HTML('<b><ansired>{}</ansired></b>').format(i),
+                        print_formatted_text(HTML('<b><ansiyellow>{}</ansiyellow></b>').format(i),
                                              end=" " * self.space_size)  # print_formatted_text(i, end=" " * self.space_size)
                 else:
                     mytext = grid_opponent_r[i - 1, j - 1]
-                    print_formatted_text(HTML('<b><ansiwhite>{}</ansiwhite></b>').format(mytext), end=" ")
+                    if mytext == self.HIT_SYMBOL : print_formatted_text(HTML('<b><ansigreen>{}</ansigreen></b>').format(mytext), end=" ")
+                    elif mytext == self.MISS_SYMBOL : print_formatted_text(HTML('<b><ansired>{}</ansired></b>').format(mytext), end=" ")
+                    else: print_formatted_text(HTML('<b><ansiwhite>{}</ansiwhite></b>').format(mytext), end=" ")
+
                     # print(self.GRID_OPPONENT[i - 1, j - 1], end=" ")
             print_formatted_text("")  # NEW LINE
             if i == 0: print_formatted_text("")
@@ -251,6 +260,6 @@ class GridMaker:
                     print_formatted_text(HTML('<ansired>Input format is wrong!</ansired>'))
                     print_formatted_text(HTML('<ansired>Please try again...</ansired>'))
                     continue
-                print_formatted_text(e)
-                print(traceback.format_exc())  # print stack trace
+                #print_formatted_text(e)
+                #print(traceback.format_exc())  # print stack trace
                 break
