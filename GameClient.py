@@ -12,9 +12,10 @@ from prompt_toolkit.styles import Style
 import os
 from prompt_toolkit import print_formatted_text, HTML, ANSI
 from  keyboard import press
+from Battleship.ShipText import ShipText
 
 
-os.system("mode con cols=140 lines=30")
+os.system("mode con cols=140 lines=40")
 #press("F11")
 
 
@@ -49,7 +50,7 @@ def send(msg,client):
 
     #print("Message is taken.")
 
-def send_and_wait(msg,client):
+def send_and_wait(message_sent,client):
     global MESSAGE_TAKEN,ADDR
     content=None
     connected = False
@@ -62,7 +63,7 @@ def send_and_wait(msg,client):
 
     while MESSAGE_TAKEN is None:
         try:
-            send(msg=pickle.dumps(msg),client=client)
+            send(msg=pickle.dumps(message_sent),client=client)
             content = MESSAGE_TAKEN
         except Exception as e:
             if e is None:
@@ -96,15 +97,17 @@ def play():
         ('class:column', ' :')
     ]
     username_client = prompt(message=message,style=style)
+    if username_client.strip() == "": username_client = "YOU"
     username_server = ""
 
 
     print_formatted_text(HTML('<ansiyellow>\nWaiting for other player to pick a username!\n</ansiyellow>'))
 
     #0
+    username_sent = username_client
+    if username_sent=="YOU": username_sent="OPPONENT"
     client = open_client()
-    msg= username_client
-    username_server=send_and_wait(msg=msg,client=client)
+    username_server = send_and_wait(message_sent=username_sent,client=client)
 
     game = Game(username1=username_client,username2=username_server)
     game.start_game()
@@ -114,44 +117,49 @@ def play():
 
     while True:
 
+
+        # ------------------------1-------------------------------
         print_formatted_text(HTML('<ansiyellow>\n\tWaiting for other player\'s move!\n</ansiyellow>'))
+        client = open_client()
+        grid_from_server = send_and_wait(message_sent=game.GRID_YOU,client=client)
 
-        #1
-        client=open_client()
-        msg = game.GRID_YOU
-        grid_from_server = send_and_wait(msg=msg,client=client)
-
-        #2
+        # ------------------------2-------------------------------
         client = open_client()
         msg ="WAITING"
-        msg_recvd= send_and_wait(msg=msg,client=client)
-        if isinstance(msg_recvd,str) and msg_recvd=="LOSE":
+        msg_recvd= send_and_wait(message_sent=msg,client=client)
+        if isinstance(msg_recvd,str) and msg_recvd=="LOSE": #YOU LOST
             winner=game.username2.upper()
-            print(winner)
+
+            game.clear_console()
+            game.DISPLAY_GRIDS(grid_you=game.GRID_YOU, grid_opponent_r=game.GRID_OPPONENT_R)
+            print_formatted_text(HTML('<ansired>\n\n{}</ansired>').format(ShipText.LOSE.value))
+            playsound('D:\Dersler\____2021-2022\CS 447\HW1\Sound\lose.mp3')
             break
         game.GRID_YOU = msg_recvd
 
+        # ------------------------3-------------------------------
         text = "\nYour turn "+game.username1.upper()+" !"
         print_formatted_text(HTML('<ansigreen>{}</ansigreen>').format(text))
-        game.all_locs_opponent_r,grid_from_server = game.make_guess(username=username_client,opponent_grid_real=grid_from_server,opponent_grid_relative=game.GRID_OPPONENT_R,possible_locs_opponent_r=game.all_locs_opponent_r)
+        game.all_locs_opponent_r,grid_from_server = game.make_guess(username=username_client,
+                                                                    opponent_grid_real=grid_from_server,
+                                                                    opponent_grid_relative=game.GRID_OPPONENT_R,
+                                                                    possible_locs_opponent_r=game.all_locs_opponent_r)
         game.DISPLAY_GRIDS(grid_you=game.GRID_YOU,grid_opponent_r=game.GRID_OPPONENT_R)
-        if game.is_game_finished(grid_from_server):
+        if game.is_game_finished(grid_from_server): #YOU WIN
             winner=game.username1.upper()
             client = open_client()
             msg = "LOSE"
-            send_and_wait(msg=msg,client=client)
+            send_and_wait(message_sent=msg,client=client)
+
+            game.clear_console()
+            game.DISPLAY_GRIDS(grid_you=game.GRID_YOU, grid_opponent_r=game.GRID_OPPONENT_R)
+            print_formatted_text(HTML('<ansigreen>\n\n{}</ansigreen>').format(ShipText.WIN.value))
+            playsound('D:\Dersler\____2021-2022\CS 447\HW1\Sound\\victory.mp3')
             break
         client = open_client()
-        msg = game.GRID_YOU
-        send_and_wait(msg=msg,client=client)
-
-    print(winner)
+        send_and_wait(message_sent=grid_from_server,client=client)
 
 
-play()
 
-
-# MESSAGE_SENT = [3,2,1]
-# send(pickle.dumps(MESSAGE_SENT))
-# #send(DISCONNECT_MESSAGE)
-# print(MESSAGE_TAKEN)
+if __name__ == "__main__":
+    sys.exit(play())

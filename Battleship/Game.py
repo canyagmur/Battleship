@@ -45,7 +45,7 @@ class Game():
         self.grid_maker = GridMaker(game_size=self.game_size, space_size=self.space_size, username1=username1,
                                     username2=username2, PLACE_HOLDER=self.PLACE_HOLDER)
 
-        self.all_locs_opponent_r = GridMaker.all_locations.copy()
+        self.all_locs_opponent_r = self.grid_maker.all_locations.copy()#GridMaker.all_locations.copy()
 
     def DISPLAY_GRIDS(self,grid_you, grid_opponent_r):
         self.grid_maker.display_grids(grid_you=grid_you,grid_opponent_r=grid_opponent_r)
@@ -113,7 +113,7 @@ class Game():
             try:
                 print_formatted_text(HTML('<ansiyellow>\n\tPLEASE MAKE A GUESS\n</ansiyellow>'))
                 guess = prompt(message, style=style, completer=loc_completer)
-                if guess in GridMaker.all_locations :   #It checks whether the guess is wrong formatted or not.
+                if guess in self.grid_maker.all_locations :   #It checks whether the guess is wrong formatted or not.
                      if guess in loc_copy:
                         """From now on guess is valid"""
                         x,y = self.convert_coordinate(guess)

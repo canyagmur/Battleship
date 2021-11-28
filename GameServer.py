@@ -8,11 +8,12 @@ from prompt_toolkit import print_formatted_text, HTML, ANSI
 import pickle
 import sys
 import os
-from  keyboard import press
+from playsound import playsound
+from keyboard import press
+from Battleship.ShipText import ShipText
 
-
-os.system("mode con cols=140 lines=30")
-#press("F11")
+os.system("mode con cols=140 lines=40")
+# press("F11")
 
 HEADER = 64
 PORT = 5050
@@ -86,12 +87,15 @@ def play():
 
     # Ask server to pick a username (here) //username_server
     username_server = prompt(message=message, style=style)
+    if username_server.strip() == "": username_server = "YOU"
 
     print_formatted_text(HTML('<ansiyellow>\nWaiting for other player to pick a username!\n</ansiyellow>'))
 
     # Ask client to pick a username and send server's username back to client. // username_client
+    username_sent = username_server
+    if username_sent == "YOU": username_sent = "OPPONENT"
     server = open_server()
-    connect(message_sent=username_server, server=server)
+    connect(message_sent=username_sent, server=server)
     username_client = MESSAGE_TAKEN
     MESSAGE_TAKEN = None
 
@@ -106,11 +110,11 @@ def play():
 
         # Ask client to give its GRID and send server's back.//////grid_from_client
 
+        # ------------------------1-------------------------------
         server = open_server()
         connect(message_sent=game.GRID_YOU, server=server)
         grid_from_client = MESSAGE_TAKEN
         MESSAGE_TAKEN = None
-
 
         text = "\nYour turn " + game.username1.upper() + " !"
         print_formatted_text(HTML('<ansigreen>{}</ansigreen>').format(text))
@@ -120,24 +124,36 @@ def play():
                                                                      opponent_grid_relative=game.GRID_OPPONENT_R,
                                                                      possible_locs_opponent_r=game.all_locs_opponent_r)
         game.DISPLAY_GRIDS(grid_you=game.GRID_YOU, grid_opponent_r=game.GRID_OPPONENT_R)
-        if game.is_game_finished(grid_from_client):
+
+        if game.is_game_finished(grid_from_client):  # YOU WIN
             winner = game.username1.upper()
             server = open_server()
             connect(message_sent="LOSE", server=server)
-            print(winner)
+
+            game.clear_console()
+            game.DISPLAY_GRIDS(grid_you=game.GRID_YOU, grid_opponent_r=game.GRID_OPPONENT_R)
+            print_formatted_text(HTML('<ansigreen>\n\n{}</ansigreen>').format(ShipText.WIN.value))
+            playsound('D:\Dersler\____2021-2022\CS 447\HW1\Sound\\victory.mp3')
             break
+
+        # ------------------------2-------------------------------
         # Send client grid_ back to client. #WAITING
         server = open_server()
         connect(message_sent=grid_from_client, server=server)
         MESSAGE_TAKEN = None
 
+        # ------------------------3-------------------------------
         # now its client's turn... wait for its move and your updated grid.
         print_formatted_text(HTML('<ansiyellow>\n\tWaiting for other player\'s move!\n</ansiyellow>'))
         server = open_server()
         connect(message_sent="WAITING", server=server)
-        if isinstance(MESSAGE_TAKEN, str) and MESSAGE_TAKEN == "LOSE":
+        if isinstance(MESSAGE_TAKEN, str) and MESSAGE_TAKEN == "LOSE":  # YOU LOST
             winner = game.username2.upper()
-            print(winner)
+
+            game.clear_console()
+            game.DISPLAY_GRIDS(grid_you=game.GRID_YOU, grid_opponent_r=game.GRID_OPPONENT_R)
+            print_formatted_text(HTML('<ansired>\n\n{}</ansired>').format(ShipText.LOSE.value))
+            playsound('D:\Dersler\____2021-2022\CS 447\HW1\Sound\lose.mp3')
             break
 
         game.GRID_YOU = MESSAGE_TAKEN
@@ -146,5 +162,3 @@ def play():
 
 if __name__ == "__main__":
     sys.exit(play())
-
-
