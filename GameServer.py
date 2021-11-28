@@ -20,7 +20,6 @@ PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
-MESSAGE_TAKEN = None
 
 
 def open_server():
@@ -33,7 +32,6 @@ def open_server():
 
 
 def handle_client(conn, addr, server_message):
-    global MESSAGE_TAKEN
     # print(f"[NEW CONNECTION] {addr} connected.")
 
     connected = True
@@ -42,7 +40,7 @@ def handle_client(conn, addr, server_message):
         if msg_length:
             msg_length = int(msg_length)
             recvd_data = conn.recv(msg_length)
-            MESSAGE_TAKEN = pickle.loads(recvd_data)
+            recvd_data = pickle.loads(recvd_data)
 
             # print(f"[{addr}] {MESSAGE}")
             # print("Message is taken!")
@@ -50,22 +48,22 @@ def handle_client(conn, addr, server_message):
             break
 
     conn.close()
+    return  recvd_data
 
 
 def connect(message_sent, server):
-    global MESSAGE_TAKEN
     server.listen()
-    # print(f"[LISTENING] Server is listening on {SERVER}")
-    while MESSAGE_TAKEN is None:
+    recvd_data = None
+    while recvd_data is None:
         conn, addr = server.accept()
-        handle_client(conn, addr, message_sent)
+        recvd_data=handle_client(conn, addr, message_sent)
         # print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
 
     server.close()
+    return recvd_data
 
 
 def play():
-    global MESSAGE_TAKEN
     Game.Welcome()  # hi to server
 
     style = Style.from_dict({
@@ -95,9 +93,8 @@ def play():
     username_sent = username_server
     if username_sent == "YOU": username_sent = "OPPONENT"
     server = open_server()
-    connect(message_sent=username_sent, server=server)
-    username_client = MESSAGE_TAKEN
-    MESSAGE_TAKEN = None
+    username_client =connect(message_sent=username_sent, server=server)
+
 
     game = Game(username1=username_server, username2=username_client)
     game.start_game()
@@ -111,10 +108,10 @@ def play():
         # Ask client to give its GRID and send server's back.//////grid_from_client
 
         # ------------------------1-------------------------------
+        #Player 1 makes guess
         server = open_server()
-        connect(message_sent=game.GRID_YOU, server=server)
-        grid_from_client = MESSAGE_TAKEN
-        MESSAGE_TAKEN = None
+        grid_from_client=connect(message_sent=game.GRID_YOU, server=server)
+
 
         text = "\nYour turn " + game.username1.upper() + " !"
         print_formatted_text(HTML('<ansigreen>{}</ansigreen>').format(text))
@@ -140,14 +137,13 @@ def play():
         # Send client grid_ back to client. #WAITING
         server = open_server()
         connect(message_sent=grid_from_client, server=server)
-        MESSAGE_TAKEN = None
 
         # ------------------------3-------------------------------
         # now its client's turn... wait for its move and your updated grid.
         print_formatted_text(HTML('<ansiyellow>\n\tWaiting for other player\'s move!\n</ansiyellow>'))
         server = open_server()
-        connect(message_sent="WAITING", server=server)
-        if isinstance(MESSAGE_TAKEN, str) and MESSAGE_TAKEN == "LOSE":  # YOU LOST
+        message_taken = connect(message_sent="WAITING", server=server)
+        if isinstance(message_taken, str) and message_taken == "LOSE":  # YOU LOST
             winner = game.username2.upper()
 
             game.clear_console()
@@ -156,8 +152,7 @@ def play():
             playsound('.\Sound\lose.mp3')
             break
 
-        game.GRID_YOU = MESSAGE_TAKEN
-        MESSAGE_TAKEN = None
+        game.GRID_YOU = message_taken
 
 
 if __name__ == "__main__":

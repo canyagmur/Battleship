@@ -19,7 +19,6 @@ os.system("mode con cols=140 lines=40")
 #press("F11")
 
 
-MESSAGE_TAKEN = None
 HEADER = 64
 PORT = 5050
 FORMAT = 'utf-8'
@@ -37,7 +36,6 @@ def open_client():
     return client
 
 def send(msg,client):
-    global MESSAGE_TAKEN
     message = msg
     msg_length = len(message)
     send_length = str(msg_length).encode(FORMAT)
@@ -45,13 +43,13 @@ def send(msg,client):
     client.send(send_length)
     client.send(message)
     recvd_data = client.recv(2048)
-    MESSAGE_TAKEN = pickle.loads(recvd_data)
+    recvd_data = pickle.loads(recvd_data)
     client.close()
+    return recvd_data
 
-    #print("Message is taken.")
 
 def send_and_wait(message_sent,client):
-    global MESSAGE_TAKEN,ADDR
+    global ADDR
     content=None
     connected = False
     while not connected:
@@ -61,10 +59,9 @@ def send_and_wait(message_sent,client):
         except Exception as e:
             pass  # Do nothing, just try again
 
-    while MESSAGE_TAKEN is None:
+    while content is None:
         try:
-            send(msg=pickle.dumps(message_sent),client=client)
-            content = MESSAGE_TAKEN
+            content=send(msg=pickle.dumps(message_sent),client=client)
         except Exception as e:
             if e is None:
                 print("problem is not found?!")
@@ -72,12 +69,10 @@ def send_and_wait(message_sent,client):
             print(e)
             print(traceback.format_exc())  # print stack trace
             break
-    MESSAGE_TAKEN=None
     return content
 
 
 def play():
-    global MESSAGE_TAKEN
     Game.Welcome()
 
     style = Style.from_dict({
