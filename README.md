@@ -1,8 +1,8 @@
-#Battleship Terminal Game
-##DESCRIPTION 
+# Battleship Terminal Game
+## DESCRIPTION 
 In this project, the [Battleship Game](https://en.wikipedia.org/wiki/Battleship_(game)) is implemented as a terminal based game which can be played within the local host of the players'.
 
-##Features
+## Features
 * Python3
 * TCP
 * Class Project - CS 447 Computer Networks Fall 2021-22
