@@ -23,3 +23,20 @@ e.g --> python GameClient.py --ip '127.0.0.1' -p 5050
 ## IMPORTANT
 
 If nothing is prompted, press 'TAB'. Sometimes prompt can be buggy.
+
+
+## Samples
+### Player Welcome Prompt 
+![alt text](./Assets/battleship-server-1.png)
+
+### Boards 
+![alt text](./Assets/deploy-screen.png)
+
+### Deploy Your Fleet Sample 1
+![alt text](./Assets/smart-deploy.png)
+
+### Deploy Your Fleet Sample 2
+![alt text](./Assets/smart-deploy2.png)
+
+### Win-Lose Screen
+![alt text](./Assets/win-lose.png)
